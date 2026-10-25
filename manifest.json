@@ -1,0 +1,13 @@
+
+{
+  "name": "Ordenando mis actividades",
+  "short_name": "Mis actividades",
+  "description": "Organizá tus tareas escolares de forma sencilla e inclusiva.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f8f0ff",
+  "theme_color": "#8b5cf6",
+  "lang": "es",
+  "icons": []
+}
