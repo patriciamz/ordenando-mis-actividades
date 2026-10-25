@@ -117,5 +117,26 @@ if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("./service-worker.js");
   });
 }
+</script> <button id="instalar-app" hidden>
+  Instalar la aplicación
+</button>
+
+<script>
+let instalacionPendiente;
+const boton = document.getElementById("instalar-app");
+
+window.addEventListener("beforeinstallprompt", (evento) => {
+  evento.preventDefault();
+  instalacionPendiente = evento;
+  boton.hidden = false;
+});
+
+boton.addEventListener("click", async () => {
+  if (!instalacionPendiente) return;
+  instalacionPendiente.prompt();
+  await instalacionPendiente.userChoice;
+  instalacionPendiente = null;
+  boton.hidden = true;
+});
 </script> </body>
 </html>
