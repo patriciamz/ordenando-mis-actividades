@@ -2,141 +2,375 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Ordenando mis actividades</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f5f0ff;
-      color: #382d50;
-      padding: 20px;
-      max-width: 600px;
-      margin: auto;
-    }
-    h1 { color: #7653b5; }
-    .caja {
-      background: white;
-      padding: 20px;
-      border-radius: 16px;
-      margin-top: 20px;
-    }
-    input, button {
-      padding: 12px;
-      margin: 5px 0;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      font-size: 16px;
-    }
-    input { width: 90%; }
-    button {
-      background: #7653b5;
-      color: white;
-      cursor: pointer;
-    }
-    li { margin: 12px 0; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#7957c8">
+<meta name="manifest" content="manifest.json">
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#8b5cf6"> </head>
+<title>Ordenando mis actividades</title>
+
+<style>
+:root {
+  --principal: #7957c8;
+  --fondo: #f7f4ff;
+  --texto: #29243a;
+  --tarjeta: #ffffff;
+  --borde: #ded5f4;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: var(--fondo);
+  color: var(--texto);
+  line-height: 1.5;
+}
+header {
+  background: var(--principal);
+  color: white;
+  text-align: center;
+  padding: 26px 16px;
+}
+header h1 { margin: 0 0 8px; font-size: 27px; }
+header p { margin: 0; }
+main { max-width: 760px; margin: auto; padding: 18px; }
+.panel {
+  background: var(--tarjeta);
+  padding: 20px;
+  border-radius: 18px;
+  margin-bottom: 18px;
+  border: 1px solid var(--borde);
+}
+h2 { margin-top: 0; font-size: 21px; }
+label { display: block; font-weight: bold; margin: 12px 0 5px; }
+input, select, textarea, button {
+  font: inherit;
+}
+input, select, textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #aaa0bd;
+  border-radius: 10px;
+  background: white;
+  color: #29243a;
+}
+button {
+  border: 0;
+  border-radius: 10px;
+  padding: 12px 16px;
+  cursor: pointer;
+  font-weight: bold;
+}
+button:focus-visible, input:focus-visible,
+select:focus-visible, textarea:focus-visible {
+  outline: 3px solid #e09b27;
+  outline-offset: 2px;
+}
+.primario { background: var(--principal); color: white; }
+.secundario { background: #eee7ff; color: #38265f; }
+.peligro { background: #ffeded; color: #8a2020; }
+.boton-completo { width: 100%; margin-top: 16px; }
+.filtros { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+.filtros button[aria-pressed="true"] {
+  background: var(--principal);
+  color: white;
+}
+.tarea {
+  border: 1px solid var(--borde);
+  border-left: 5px solid var(--principal);
+  border-radius: 12px;
+  padding: 14px;
+  margin: 12px 0;
+  background: white;
+}
+.tarea h3 { margin: 0 0 7px; overflow-wrap: anywhere; }
+.tarea p { margin: 5px 0; overflow-wrap: anywhere; }
+.tarea.completada { opacity: .75; border-left-color: #32845a; }
+.tarea.completada h3 { text-decoration: line-through; }
+.etiqueta { font-size: 13px; font-weight: bold; }
+.acciones { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.vacio { text-align: center; padding: 20px 8px; }
+.pie { text-align: center; padding: 18px; font-size: 14px; }
+.oculto { display: none; }
+</style>
+</head>
+
 <body>
+<header>
   <h1>🌷 Ordenando mis actividades</h1>
-  <p>Organizá tus tareas escolares paso a paso.</p>
+  <p>Organizá tus tareas a tu manera, paso a paso.</p>
+</header>
 
-  <div class="caja">
-    <h2>Agregar una tarea</h2>
-    <input id="tarea" placeholder="¿Qué tenés que hacer?">
-    <br>
-    <input id="fecha" type="date">
-    <br>
-    <button onclick="agregar()">Agregar tarea</button>
-  </div>
+<main>
+  <section class="panel" aria-labelledby="titulo-formulario">
+    <h2 id="titulo-formulario">➕ Agregar una actividad</h2>
 
-  <div class="caja">
-    <h2>Mis tareas</h2>
-    <ul id="lista"></ul>
-  </div>
+    <form id="formulario">
+      <label for="nombre">¿Qué tenés que hacer?</label>
+      <input id="nombre" maxlength="120" required
+        placeholder="Ej.: estudiar para Matemática">
 
-  <script>
-    let tareas = JSON.parse(localStorage.getItem("misTareas") || "[]");
+      <label for="materia">Materia</label>
+      <select id="materia">
+        <option>Matemática</option>
+        <option>Lengua</option>
+        <option>Historia</option>
+        <option>Geografía</option>
+        <option>Biología</option>
+        <option>Inglés</option>
+        <option>Física</option>
+        <option>Química</option>
+        <option>Educación Física</option>
+        <option>Otra</option>
+      </select>
 
-    function mostrar() {
-      const lista = document.getElementById("lista");
-      lista.innerHTML = "";
+      <label for="fecha">Fecha de entrega</label>
+      <input id="fecha" type="date">
 
-      tareas.forEach((tarea, i) => {
-        const li = document.createElement("li");
-        const texto = document.createElement("span");
-        texto.textContent = tarea.nombre + (tarea.fecha ? " — " + tarea.fecha : "");
-        li.appendChild(texto);
+      <label for="prioridad">¿Qué importancia tiene?</label>
+      <select id="prioridad">
+        <option value="Normal">Normal</option>
+        <option value="Importante">Importante</option>
+        <option value="Urgente">Urgente</option>
+      </select>
 
-        const boton = document.createElement("button");
-        boton.textContent = tarea.hecha ? "Completada ✓" : "Marcar lista";
-        boton.onclick = () => {
-          tareas[i].hecha = !tareas[i].hecha;
-          guardar();
-        };
-        li.appendChild(boton);
+      <label for="notas">Detalles o ayuda para recordar (opcional)</label>
+      <textarea id="notas" rows="3" maxlength="500"
+        placeholder="Anotá qué necesitás llevar o qué pasos seguir."></textarea>
 
-        const borrar = document.createElement("button");
-        borrar.textContent = "Eliminar";
-        borrar.onclick = () => {
-          tareas.splice(i, 1);
-          guardar();
-        };
-        li.appendChild(borrar);
-        lista.appendChild(li);
-      });
-    }
+      <button class="primario boton-completo" type="submit">
+        Guardar actividad
+      </button>
+    </form>
+  </section>
 
-    function agregar() {
-      const campo = document.getElementById("tarea");
-      const nombre = campo.value.trim();
-      if (!nombre) {
-        alert("Escribí una tarea primero.");
-        return;
-      }
-      tareas.push({
-        nombre,
-        fecha: document.getElementById("fecha").value,
-        hecha: false
-      });
-      campo.value = "";
-      guardar();
-    }
+  <section class="panel" aria-labelledby="titulo-lista">
+    <h2 id="titulo-lista">📚 Mis actividades</h2>
+    <p id="resumen" aria-live="polite">Todavía no hay actividades.</p>
 
-    function guardar() {
-      localStorage.setItem("misTareas", JSON.stringify(tareas));
-      mostrar();
-    }
+    <div class="filtros" aria-label="Filtrar actividades">
+      <button class="secundario" data-filtro="Todas"
+        aria-pressed="true">Todas</button>
+      <button class="secundario" data-filtro="Pendientes"
+        aria-pressed="false">Pendientes</button>
+      <button class="secundario" data-filtro="Completadas"
+        aria-pressed="false">Completadas</button>
+    </div>
 
-    mostrar();
-  </script>
+    <label for="buscar">Buscar una actividad</label>
+    <input id="buscar" type="search"
+      placeholder="Escribí el nombre o la materia">
+
+    <div id="lista" aria-live="polite"></div>
+  </section>
+
+  <section class="panel">
+    <h2>💜 Un paso a la vez</h2>
+    <p>No hace falta hacer todo junto. Elegí una tarea, organizá tu tiempo y avanzá a tu ritmo.</p>
+    <button id="instalar-app" class="secundario oculto" type="button">
+      Instalar la aplicación
+    </button>
+  </section>
+</main>
+
+<footer class="pie">
+  Hecho para acompañarte en tu camino escolar 🌈
+</footer>
+
 <script>
+const formulario = document.getElementById("formulario");
+const lista = document.getElementById("lista");
+const resumen = document.getElementById("resumen");
+const buscar = document.getElementById("buscar");
+
+let actividades = [];
+let filtroActual = "Todas";
+
+try {
+  const guardadas = JSON.parse(
+    localStorage.getItem("actividades-escolares-v2") || "[]"
+  );
+  if (Array.isArray(guardadas)) actividades = guardadas;
+} catch {
+  actividades = [];
+}
+
+function guardar() {
+  try {
+    localStorage.setItem(
+      "actividades-escolares-v2",
+      JSON.stringify(actividades)
+    );
+  } catch {
+    alert("No se pudieron guardar los cambios en este dispositivo.");
+  }
+}
+
+function crearTexto(etiqueta, contenido) {
+  const p = document.createElement("p");
+  const fuerte = document.createElement("strong");
+  fuerte.textContent = etiqueta + ": ";
+  p.append(fuerte, document.createTextNode(contenido));
+  return p;
+}
+
+function mostrar() {
+  lista.replaceChildren();
+
+  const pendientes = actividades.filter(a => !a.completada).length;
+  resumen.textContent = `Tenés ${pendientes} actividad(es) pendiente(s) de ${actividades.length} en total.`;
+
+  const termino = buscar.value.trim().toLocaleLowerCase("es");
+
+  const visibles = actividades.filter(a => {
+    const coincideFiltro =
+      filtroActual === "Todas" ||
+      (filtroActual === "Pendientes" && !a.completada) ||
+      (filtroActual === "Completadas" && a.completada);
+
+    const coincideTexto =
+      (a.nombre + " " + a.materia).toLocaleLowerCase("es")
+        .includes(termino);
+
+    return coincideFiltro && coincideTexto;
+  });
+
+  if (visibles.length === 0) {
+    const p = document.createElement("p");
+    p.className = "vacio";
+    p.textContent = actividades.length === 0
+      ? "Todavía no agregaste actividades. ¡Podés empezar ahora! 🌷"
+      : "No encontramos actividades con esos filtros.";
+    lista.append(p);
+    return;
+  }
+
+  visibles.sort((a, b) => {
+    if (a.completada !== b.completada) return a.completada ? 1 : -1;
+    if (!a.fecha) return 1;
+    if (!b.fecha) return -1;
+    return a.fecha.localeCompare(b.fecha);
+  });
+
+  visibles.forEach(a => {
+    const tarjeta = document.createElement("article");
+    tarjeta.className = "tarea" + (a.completada ? " completada" : "");
+
+    const titulo = document.createElement("h3");
+    titulo.textContent = a.nombre;
+    tarjeta.append(titulo);
+
+    tarjeta.append(crearTexto("Materia", a.materia));
+    tarjeta.append(crearTexto("Entrega", a.fecha || "Sin fecha"));
+    tarjeta.append(crearTexto("Prioridad", a.prioridad));
+
+    if (a.notas) tarjeta.append(crearTexto("Detalles", a.notas));
+
+    const estado = document.createElement("p");
+    estado.className = "etiqueta";
+    estado.textContent = a.completada
+      ? "✓ Actividad completada"
+      : "○ Actividad pendiente";
+    tarjeta.append(estado);
+
+    const acciones = document.createElement("div");
+    acciones.className = "acciones";
+
+    const completar = document.createElement("button");
+    completar.className = "secundario";
+    completar.textContent = a.completada
+      ? "Marcar pendiente"
+      : "Marcar completada";
+    completar.setAttribute("aria-label",
+      (a.completada ? "Marcar pendiente: " : "Completar: ") + a.nombre);
+    completar.addEventListener("click", () => {
+      a.completada = !a.completada;
+      guardar();
+      mostrar();
+    });
+
+    const eliminar = document.createElement("button");
+    eliminar.className = "peligro";
+    eliminar.textContent = "Eliminar";
+    eliminar.setAttribute("aria-label", "Eliminar: " + a.nombre);
+    eliminar.addEventListener("click", () => {
+      if (confirm("¿Querés eliminar esta actividad?")) {
+        actividades = actividades.filter(x => x.id !== a.id);
+        guardar();
+        mostrar();
+      }
+    });
+
+    acciones.append(completar, eliminar);
+    tarjeta.append(acciones);
+    lista.append(tarjeta);
+  });
+}
+
+formulario.addEventListener("submit", evento => {
+  evento.preventDefault();
+
+  const nombre = document.getElementById("nombre").value.trim();
+  if (!nombre) return;
+
+  actividades.push({
+    id: Date.now().toString() + Math.random().toString(16).slice(2),
+    nombre,
+    materia: document.getElementById("materia").value,
+    fecha: document.getElementById("fecha").value,
+    prioridad: document.getElementById("prioridad").value,
+    notas: document.getElementById("notas").value.trim(),
+    completada: false
+  });
+
+  guardar();
+  formulario.reset();
+  filtroActual = "Todas";
+  document.querySelectorAll("[data-filtro]").forEach(b => {
+    b.setAttribute("aria-pressed", String(b.dataset.filtro === "Todas"));
+  });
+  buscar.value = "";
+  mostrar();
+  document.getElementById("nombre").focus();
+});
+
+document.querySelectorAll("[data-filtro]").forEach(boton => {
+  boton.addEventListener("click", () => {
+    filtroActual = boton.dataset.filtro;
+    document.querySelectorAll("[data-filtro]").forEach(b => {
+      b.setAttribute("aria-pressed",
+        String(b.dataset.filtro === filtroActual));
+    });
+    mostrar();
+  });
+});
+
+buscar.addEventListener("input", mostrar);
+
+let instalacionPendiente;
+const botonInstalar = document.getElementById("instalar-app");
+
+window.addEventListener("beforeinstallprompt", evento => {
+  evento.preventDefault();
+  instalacionPendiente = evento;
+  botonInstalar.classList.remove("oculto");
+});
+
+botonInstalar.addEventListener("click", async () => {
+  if (!instalacionPendiente) return;
+  instalacionPendiente.prompt();
+  await instalacionPendiente.userChoice;
+  instalacionPendiente = null;
+  botonInstalar.classList.add("oculto");
+});
+
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("./service-worker.js");
   });
 }
-</script> <button id="instalar-app" hidden>
-  Instalar la aplicación
-</button>
 
-<script>
-let instalacionPendiente;
-const boton = document.getElementById("instalar-app");
-
-window.addEventListener("beforeinstallprompt", (evento) => {
-  evento.preventDefault();
-  instalacionPendiente = evento;
-  boton.hidden = false;
-});
-
-boton.addEventListener("click", async () => {
-  if (!instalacionPendiente) return;
-  instalacionPendiente.prompt();
-  await instalacionPendiente.userChoice;
-  instalacionPendiente = null;
-  boton.hidden = true;
-});
-</script> </body>
+mostrar();
+</script>
+</body>
 </html>
