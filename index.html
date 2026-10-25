@@ -164,7 +164,16 @@ select:focus-visible, textarea:focus-visible {
     <div id="lista" aria-live="polite"></div>
   </section>
 
-  <section class="panel">
+  
+<section class="panel" aria-labelledby="titulo-calendario">
+  <h2 id="titulo-calendario">📅 Mi calendario escolar</h2>
+  <label for="fecha-calendario">Elegí un día para consultar</label>
+  <input id="fecha-calendario" type="date">
+  <div id="actividades-del-dia" aria-live="polite">
+    Elegí una fecha para consultar tus actividades.
+  </div>
+</section>
+<section class="panel">
     <h2>💜 Un paso a la vez</h2>
     <p>No hace falta hacer todo junto. Elegí una tarea, organizá tu tiempo y avanzá a tu ritmo.</p>
     <button id="instalar-app" class="secundario oculto" type="button">
@@ -214,6 +223,33 @@ function crearTexto(etiqueta, contenido) {
   return p;
 }
 
+
+const fechaCalendario = document.getElementById("fecha-calendario");
+const actividadesDelDia = document.getElementById("actividades-del-dia");
+
+fechaCalendario.addEventListener("change", () => {
+  const fecha = fechaCalendario.value;
+  actividadesDelDia.replaceChildren();
+
+  if (!fecha) {
+    actividadesDelDia.textContent = "Elegí una fecha para consultar tus actividades.";
+    return;
+  }
+
+  const delDia = actividades.filter(a => a.fecha === fecha);
+
+  if (delDia.length === 0) {
+    actividadesDelDia.textContent = "No tenés actividades registradas para ese día.";
+    return;
+  }
+
+  delDia.forEach(a => {
+    const p = document.createElement("p");
+    p.textContent = `${a.completada ? "✓" : "○"} ${a.nombre} — ${a.materia} — ${a.prioridad}`;
+    actividadesDelDia.append(p);
+  });
+});
+  
 function mostrar() {
   lista.replaceChildren();
 
