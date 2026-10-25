@@ -1,0 +1,114 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ordenando mis actividades</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f0ff;
+      color: #382d50;
+      padding: 20px;
+      max-width: 600px;
+      margin: auto;
+    }
+    h1 { color: #7653b5; }
+    .caja {
+      background: white;
+      padding: 20px;
+      border-radius: 16px;
+      margin-top: 20px;
+    }
+    input, button {
+      padding: 12px;
+      margin: 5px 0;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+    input { width: 90%; }
+    button {
+      background: #7653b5;
+      color: white;
+      cursor: pointer;
+    }
+    li { margin: 12px 0; }
+  </style>
+</head>
+<body>
+  <h1>🌷 Ordenando mis actividades</h1>
+  <p>Organizá tus tareas escolares paso a paso.</p>
+
+  <div class="caja">
+    <h2>Agregar una tarea</h2>
+    <input id="tarea" placeholder="¿Qué tenés que hacer?">
+    <br>
+    <input id="fecha" type="date">
+    <br>
+    <button onclick="agregar()">Agregar tarea</button>
+  </div>
+
+  <div class="caja">
+    <h2>Mis tareas</h2>
+    <ul id="lista"></ul>
+  </div>
+
+  <script>
+    let tareas = JSON.parse(localStorage.getItem("misTareas") || "[]");
+
+    function mostrar() {
+      const lista = document.getElementById("lista");
+      lista.innerHTML = "";
+
+      tareas.forEach((tarea, i) => {
+        const li = document.createElement("li");
+        const texto = document.createElement("span");
+        texto.textContent = tarea.nombre + (tarea.fecha ? " — " + tarea.fecha : "");
+        li.appendChild(texto);
+
+        const boton = document.createElement("button");
+        boton.textContent = tarea.hecha ? "Completada ✓" : "Marcar lista";
+        boton.onclick = () => {
+          tareas[i].hecha = !tareas[i].hecha;
+          guardar();
+        };
+        li.appendChild(boton);
+
+        const borrar = document.createElement("button");
+        borrar.textContent = "Eliminar";
+        borrar.onclick = () => {
+          tareas.splice(i, 1);
+          guardar();
+        };
+        li.appendChild(borrar);
+        lista.appendChild(li);
+      });
+    }
+
+    function agregar() {
+      const campo = document.getElementById("tarea");
+      const nombre = campo.value.trim();
+      if (!nombre) {
+        alert("Escribí una tarea primero.");
+        return;
+      }
+      tareas.push({
+        nombre,
+        fecha: document.getElementById("fecha").value,
+        hecha: false
+      });
+      campo.value = "";
+      guardar();
+    }
+
+    function guardar() {
+      localStorage.setItem("misTareas", JSON.stringify(tareas));
+      mostrar();
+    }
+
+    mostrar();
+  </script>
+</body>
+</html>
