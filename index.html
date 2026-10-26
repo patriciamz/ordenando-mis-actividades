@@ -516,6 +516,17 @@ function actualizarRecordatorios() {
   }
 
   proximas.forEach(a => {
+    if (a.dias === 0 && Notification.permission === "granted") {
+  const clave = "aviso-" + a.nombre + "-" + a.fecha;
+
+  if (!localStorage.getItem(clave)) {
+    new Notification("🔔 ¡Tenés una tarea para hoy!", {
+      body: a.nombre + " — " + a.materia
+    });
+
+    localStorage.setItem(clave, "enviado");
+  }
+}
     const aviso = document.createElement("div");
     aviso.className = "aviso-recordatorio";
 
