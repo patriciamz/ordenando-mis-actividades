@@ -528,13 +528,16 @@ function actualizarRecordatorios() {
     if (a.dias === 0 && Notification.permission === "granted") {
   const clave = "aviso-" + a.nombre + "-" + a.fecha;
 
-  if (!localStorage.getItem(clave)) {
-    new Notification("🔔 ¡Tenés una tarea para hoy!", {
-      body: a.nombre + " — " + a.materia
+if (!localStorage.getItem(clave)) {
+  navigator.serviceWorker.ready.then(function(registro) {
+    registro.showNotification("🔔 ¡Tenés una tarea para hoy!", {
+      body: a.nombre + " — " + a.materia,
+      icon: "./icon-192.png"
     });
+  });
 
-    localStorage.setItem(clave, "enviado");
-  }
+  localStorage.setItem(clave, "enviado");
+}
 }
     const aviso = document.createElement("div");
     aviso.className = "aviso-recordatorio";
