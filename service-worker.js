@@ -1,5 +1,5 @@
 
-const CACHE_NAME = "ordenando-actividades-v2";
+const CACHE_NAME = "ordenando-actividades-v3";
 const ARCHIVOS = [
   "./",
   "./index.html",
