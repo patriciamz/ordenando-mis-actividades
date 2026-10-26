@@ -736,6 +736,7 @@ function probarNotificaciones() {
 
   Notification.requestPermission().then(function (permiso) {
     if (permiso === "granted") {
+      alert("Permiso concedido. Vamos a probar el aviso.");
       navigator.serviceWorker.ready.then(function (registro) {
         registro.showNotification("¡Ordenando mis actividades!", {
           body: "¡Ya podés probar tus notificaciones!",
