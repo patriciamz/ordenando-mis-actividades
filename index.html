@@ -226,7 +226,7 @@ select:focus-visible, textarea:focus-visible {
 
 <main>
   
-<section class="panel" aria-labelledby="titulo-formulario" data-pestana="inicio">
+<section class="panel" aria-labelledby="titulo-formulario" data-pestana="actividades">
 
     <h2 id="titulo-formulario">➕ Agregar una actividad</h2>
 
@@ -702,7 +702,7 @@ function mostrarPestana(nombre) {
       seccion.dataset.pestana === nombre ? "" : "none";
   });
 }
-
+mostrarPestana('inicio');
 </script>
 </body>
 </html>
