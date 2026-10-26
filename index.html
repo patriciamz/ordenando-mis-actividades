@@ -181,17 +181,53 @@ select:focus-visible, textarea:focus-visible {
     font-size: 14px;
   }
 }
+
+.barra-pestanas {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  margin: 12px auto;
+  background: #f5e8ff;
+  border-radius: 14px;
+}
+
+.barra-pestanas button {
+  padding: 10px 14px;
+  border: none;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #7136a8;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.barra-pestanas button:hover {
+  background: #e4ccff;
+}
+
 </style>
 </head>
 
 <body>
+  
+<nav class="barra-pestanas">
+  <button onclick="mostrarPestana('inicio')">🏠 Inicio</button>
+  <button onclick="mostrarPestana('tareas')">📝 Mis tareas</button>
+  <button onclick="mostrarPestana('calendario')">📅 Calendario</button>
+  <button onclick="mostrarPestana('recordatorios')">🔔 Recordatorios</button>
+</nav>
+
 <header>
   <h1>🌷 Ordenando mis actividades</h1>
   <p>Organizá tus tareas a tu manera, paso a paso.</p>
 </header>
 
 <main>
-  <section class="panel" aria-labelledby="titulo-formulario">
+  
+<section class="panel" aria-labelledby="titulo-formulario" data-pestana="inicio">
+
     <h2 id="titulo-formulario">➕ Agregar una actividad</h2>
 
     <form id="formulario">
@@ -255,7 +291,9 @@ select:focus-visible, textarea:focus-visible {
 
   
 
-<section class="panel" aria-labelledby="titulo-calendario">
+
+<section class="panel" aria-labelledby="titulo-calendario" data-pestana="calendario">
+
   <h2 id="titulo-calendario">📅 Mi calendario escolar</h2>
 
   <div class="calendario-cabecera">
@@ -284,7 +322,9 @@ select:focus-visible, textarea:focus-visible {
   <div id="actividades-del-dia" aria-live="polite"></div>
 </section>
 
-<section class="panel" aria-labelledby="titulo-recordatorios">
+
+<section class="panel" aria-labelledby="titulo-recordatorios" data-pestana="recordatorios">
+
   <h2 id="titulo-recordatorios">🔔 Mis recordatorios</h2>
   <p>Revisá las tareas que tenés próximas a vencer.</p>
   <div id="lista-recordatorios" aria-live="polite">
