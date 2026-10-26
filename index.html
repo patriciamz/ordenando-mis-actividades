@@ -512,7 +512,6 @@ function actualizarRecordatorios() {
       const dias = Math.round(
         (fechaTarea - hoy) / (1000 * 60 * 60 * 24)
       );
-
       return { ...a, dias };
     })
     .filter(a => a.dias <= 7)
@@ -525,25 +524,38 @@ function actualizarRecordatorios() {
   }
 
   proximas.forEach(a => {
-    if (a.dias === 0 && Notification.permission === "granted") {
-  const clave = "aviso-" + a.nombre + "-" + a.fecha;
+    if (a.dias === 0 && "Notification" in window && Notification.permission === "granted") {
+      const clave = "aviso-" + a.nombre + "-" + a.fecha;
 
-if (!localStorage.getItem(clave)) {
-  navigator.serviceWorker.ready.then(function(registro) {
-    registro.showNotification("🔔 ¡Tenés una tarea para hoy!", {
-      body: a.nombre + " — " + a.materia,
-      icon: "./icon-192.png"
-    });
-  });
+      if (!localStorage.getItem(clave)) {
+        const titulo = "🔔 ¡Tenés una tarea para hoy!";
+        const opciones = { body: a.nombre + " — " + a.materia };
 
-  localStorage.setItem(clave, "enviado");
-}
-}
+        const mostrarAviso = () => {
+          if ("serviceWorker" in navigator) {
+            return navigator.serviceWorker.ready
+              .then(registro => registro.showNotification(titulo, opciones));
+          }
+          return Promise.reject(new Error("Service worker no disponible"));
+        };
+
+        mostrarAviso()
+          .then(() => localStorage.setItem(clave, "enviado"))
+          .catch(() => {
+            try {
+              new Notification(titulo, opciones);
+              localStorage.setItem(clave, "enviado");
+            } catch (error) {
+              console.error("No se pudo mostrar el recordatorio:", error);
+            }
+          });
+      }
+    }
+
     const aviso = document.createElement("div");
     aviso.className = "aviso-recordatorio";
 
     let mensaje;
-
     if (a.dias < 0) {
       mensaje = `⚠️ Vencida hace ${Math.abs(a.dias)} día(s)`;
     } else if (a.dias === 0) {
@@ -562,7 +574,7 @@ if (!localStorage.getItem(clave)) {
     contenedor.append(aviso);
   });
 }
-  
+
 function mostrar() {
   renderCalendario();
   actualizarRecordatorios();
@@ -732,26 +744,33 @@ function mostrarPestana(nombre) {
 }
 mostrarPestana('inicio');
 function probarNotificaciones() {
- 
   if (!("Notification" in window)) {
     alert("Tu navegador no permite notificaciones.");
     return;
   }
 
   Notification.requestPermission().then(function (permiso) {
-    if (permiso === "granted") {
-      alert("Permiso concedido. Vamos a probar el aviso.");
-      navigator.serviceWorker.ready.then(function (registro) {
-        registro.showNotification("¡Ordenando mis actividades!", {
-          body: "¡Ya podés probar tus notificaciones!",
-          icon: "./icon-192.png"
-        });
-      });
-    } else {
+    if (permiso !== "granted") {
       alert("No se habilitaron las notificaciones.");
+      return;
     }
+
+    const titulo = "¡Ordenando mis actividades!";
+    const opciones = { body: "¡Ya podés probar tus notificaciones!" };
+
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.ready
+        .then(registro => registro.showNotification(titulo, opciones))
+        .catch(() => new Notification(titulo, opciones));
+    } else {
+      new Notification(titulo, opciones);
+    }
+  }).catch(error => {
+    console.error("No se pudo solicitar permiso:", error);
+    alert("No se pudo activar la prueba de notificaciones.");
   });
 }
+
 </script>
 </body>
 </html>
