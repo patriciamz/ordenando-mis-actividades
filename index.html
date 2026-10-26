@@ -695,6 +695,14 @@ if ("serviceWorker" in navigator) {
 }
 
 mostrar();
+  
+function mostrarPestana(nombre) {
+  document.querySelectorAll("[data-pestana]").forEach(function(seccion) {
+    seccion.style.display =
+      seccion.dataset.pestana === nombre ? "" : "none";
+  });
+}
+
 </script>
 </body>
 </html>
