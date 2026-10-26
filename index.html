@@ -92,6 +92,95 @@ select:focus-visible, textarea:focus-visible {
 .vacio { text-align: center; padding: 20px 8px; }
 .pie { text-align: center; padding: 18px; font-size: 14px; }
 .oculto { display: none; }
+
+.calendario-cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.calendario-cabecera h3 {
+  text-align: center;
+  text-transform: capitalize;
+}
+
+.dias-semana,
+.cuadricula-calendario {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 5px;
+  text-align: center;
+}
+
+.dias-semana {
+  font-weight: bold;
+  margin: 12px 0 6px;
+}
+
+.dia-calendario {
+  min-width: 0;
+  min-height: 42px;
+  padding: 8px 0;
+  border: 1px solid #d8d0e8;
+  border-radius: 9px;
+  background: white;
+  color: #29213d;
+  cursor: pointer;
+}
+
+.dia-calendario.vacio {
+  border: 0;
+  background: transparent;
+}
+
+.dia-calendario.normal {
+  background: #d9f4e3;
+  border-color: #2e8b57;
+}
+
+.dia-calendario.importante {
+  background: #fff0b3;
+  border-color: #c18a00;
+}
+
+.dia-calendario.urgente {
+  background: #ffdada;
+  border-color: #c62828;
+}
+
+.dia-calendario.seleccionado {
+  outline: 3px solid #8b5cf6;
+  outline-offset: 1px;
+}
+
+.leyenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 12px 0;
+  font-size: 14px;
+}
+
+.punto {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-right: 4px;
+}
+
+.punto.normal { background: #2e8b57; }
+.punto.importante { background: #e6a817; }
+.punto.urgente { background: #d64545; }
+
+@media (max-width: 400px) {
+  .dia-calendario {
+    min-height: 36px;
+    padding: 5px 0;
+    font-size: 14px;
+  }
+}
 </style>
 </head>
 
@@ -165,14 +254,36 @@ select:focus-visible, textarea:focus-visible {
   </section>
 
   
+
 <section class="panel" aria-labelledby="titulo-calendario">
   <h2 id="titulo-calendario">📅 Mi calendario escolar</h2>
-  <label for="fecha-calendario">Elegí un día para consultar</label>
-  <input id="fecha-calendario" type="date">
-  <div id="actividades-del-dia" aria-live="polite">
-    Elegí una fecha para consultar tus actividades.
+
+  <div class="calendario-cabecera">
+    <button type="button" id="mes-anterior" aria-label="Mes anterior">‹</button>
+    <h3 id="mes-actual"></h3>
+    <button type="button" id="mes-siguiente" aria-label="Mes siguiente">›</button>
   </div>
+
+  <div class="leyenda">
+    <span><i class="punto normal"></i> Normal</span>
+    <span><i class="punto importante"></i> Importante</span>
+    <span><i class="punto urgente"></i> Urgente</span>
+  </div>
+
+  <div class="dias-semana" aria-hidden="true">
+    <span>Lun</span><span>Mar</span><span>Mié</span>
+    <span>Jue</span><span>Vie</span><span>Sáb</span><span>Dom</span>
+  </div>
+
+  <div id="cuadricula-calendario" class="cuadricula-calendario"></div>
+
+  <p id="calendario-ayuda" aria-live="polite">
+    Elegí un día para ver tus actividades.
+  </p>
+
+  <div id="actividades-del-dia" aria-live="polite"></div>
 </section>
+
 <section class="panel">
     <h2>💜 Un paso a la vez</h2>
     <p>No hace falta hacer todo junto. Elegí una tarea, organizá tu tiempo y avanzá a tu ritmo.</p>
@@ -224,19 +335,23 @@ function crearTexto(etiqueta, contenido) {
 }
 
 
-const fechaCalendario = document.getElementById("fecha-calendario");
+
+const cuadriculaCalendario = document.getElementById("cuadricula-calendario");
+const mesActual = document.getElementById("mes-actual");
 const actividadesDelDia = document.getElementById("actividades-del-dia");
+const ayudaCalendario = document.getElementById("calendario-ayuda");
 
-fechaCalendario.addEventListener("change", () => {
-  const fecha = fechaCalendario.value;
-  actividadesDelDia.replaceChildren();
+let fechaSeleccionada = "";
+let mesVisible = new Date();
+mesVisible = new Date(mesVisible.getFullYear(), mesVisible.getMonth(), 1);
 
-  if (!fecha) {
-    actividadesDelDia.textContent = "Elegí una fecha para consultar tus actividades.";
-    return;
-  }
+function fechaISO(anio, mes, dia) {
+  return `${anio}-${String(mes + 1).padStart(2, "0")}-${String(dia).padStart(2, "0")}`;
+}
 
+function mostrarActividadesDelDia(fecha) {
   const delDia = actividades.filter(a => a.fecha === fecha);
+  actividadesDelDia.replaceChildren();
 
   if (delDia.length === 0) {
     actividadesDelDia.textContent = "No tenés actividades registradas para ese día.";
@@ -248,9 +363,81 @@ fechaCalendario.addEventListener("change", () => {
     p.textContent = `${a.completada ? "✓" : "○"} ${a.nombre} — ${a.materia} — ${a.prioridad}`;
     actividadesDelDia.append(p);
   });
+}
+
+function renderCalendario() {
+  const anio = mesVisible.getFullYear();
+  const mes = mesVisible.getMonth();
+
+  mesActual.textContent = new Intl.DateTimeFormat("es-AR", {
+    month: "long",
+    year: "numeric"
+  }).format(mesVisible);
+
+  cuadriculaCalendario.replaceChildren();
+
+  const primerDia = new Date(anio, mes, 1).getDay();
+  const espacios = (primerDia + 6) % 7;
+
+  for (let i = 0; i < espacios; i++) {
+    const vacio = document.createElement("div");
+    vacio.className = "dia-calendario vacio";
+    vacio.setAttribute("aria-hidden", "true");
+    cuadriculaCalendario.append(vacio);
+  }
+
+  const cantidadDias = new Date(anio, mes + 1, 0).getDate();
+
+  for (let dia = 1; dia <= cantidadDias; dia++) {
+    const fecha = fechaISO(anio, mes, dia);
+    const delDia = actividades.filter(a => a.fecha === fecha);
+    const boton = document.createElement("button");
+
+    boton.type = "button";
+    boton.className = "dia-calendario";
+    boton.textContent = String(dia);
+
+    if (fecha === fechaSeleccionada) {
+      boton.classList.add("seleccionado");
+    }
+
+    if (delDia.some(a => a.prioridad === "Urgente")) {
+      boton.classList.add("urgente");
+    } else if (delDia.some(a => a.prioridad === "Importante")) {
+      boton.classList.add("importante");
+    } else if (delDia.some(a => a.prioridad === "Normal")) {
+      boton.classList.add("normal");
+    }
+
+    boton.setAttribute(
+      "aria-label",
+      `${dia} de ${mesActual.textContent}${delDia.length ? `, ${delDia.length} actividad(es)` : ""}`
+    );
+
+    boton.addEventListener("click", () => {
+      fechaSeleccionada = fecha;
+      ayudaCalendario.textContent = `Actividades del ${dia} de ${mesActual.textContent}:`;
+      renderCalendario();
+      mostrarActividadesDelDia(fecha);
+    });
+
+    cuadriculaCalendario.append(boton);
+  }
+}
+
+document.getElementById("mes-anterior").addEventListener("click", () => {
+  mesVisible = new Date(mesVisible.getFullYear(), mesVisible.getMonth() - 1, 1);
+  renderCalendario();
 });
+
+document.getElementById("mes-siguiente").addEventListener("click", () => {
+  mesVisible = new Date(mesVisible.getFullYear(), mesVisible.getMonth() + 1, 1);
+  renderCalendario();
+});
+
   
 function mostrar() {
+  renderCalendario();
   lista.replaceChildren();
 
   const pendientes = actividades.filter(a => !a.completada).length;
