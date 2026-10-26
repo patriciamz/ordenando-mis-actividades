@@ -284,6 +284,14 @@ select:focus-visible, textarea:focus-visible {
   <div id="actividades-del-dia" aria-live="polite"></div>
 </section>
 
+<section class="panel" aria-labelledby="titulo-recordatorios">
+  <h2 id="titulo-recordatorios">🔔 Mis recordatorios</h2>
+  <p>Revisá las tareas que tenés próximas a vencer.</p>
+  <div id="lista-recordatorios" aria-live="polite">
+    Cargando recordatorios...
+  </div>
+</section>
+
 <section class="panel">
     <h2>💜 Un paso a la vez</h2>
     <p>No hace falta hacer todo junto. Elegí una tarea, organizá tu tiempo y avanzá a tu ritmo.</p>
@@ -435,9 +443,62 @@ document.getElementById("mes-siguiente").addEventListener("click", () => {
   renderCalendario();
 });
 
+
+function actualizarRecordatorios() {
+  const contenedor = document.getElementById("lista-recordatorios");
+  contenedor.replaceChildren();
+
+  const hoy = new Date();
+  hoy.setHours(0, 0, 0, 0);
+
+  const proximas = actividades
+    .filter(a => !a.completada && a.fecha)
+    .map(a => {
+      const partes = a.fecha.split("-").map(Number);
+      const fechaTarea = new Date(partes[0], partes[1] - 1, partes[2]);
+      const dias = Math.round(
+        (fechaTarea - hoy) / (1000 * 60 * 60 * 24)
+      );
+
+      return { ...a, dias };
+    })
+    .filter(a => a.dias <= 7)
+    .sort((a, b) => a.dias - b.dias);
+
+  if (proximas.length === 0) {
+    contenedor.textContent =
+      "¡Todo tranquilo! No tenés tareas pendientes que venzan en los próximos 7 días.";
+    return;
+  }
+
+  proximas.forEach(a => {
+    const aviso = document.createElement("div");
+    aviso.className = "aviso-recordatorio";
+
+    let mensaje;
+
+    if (a.dias < 0) {
+      mensaje = `⚠️ Vencida hace ${Math.abs(a.dias)} día(s)`;
+    } else if (a.dias === 0) {
+      mensaje = "🔔 ¡Vence hoy!";
+    } else {
+      mensaje = `📅 Vence en ${a.dias} día(s)`;
+    }
+
+    const titulo = document.createElement("strong");
+    titulo.textContent = `${mensaje}: ${a.nombre}`;
+
+    const detalle = document.createElement("p");
+    detalle.textContent = `${a.materia} — Prioridad: ${a.prioridad}`;
+
+    aviso.append(titulo, detalle);
+    contenedor.append(aviso);
+  });
+}
   
 function mostrar() {
   renderCalendario();
+  actualizarRecordatorios();
   lista.replaceChildren();
 
   const pendientes = actividades.filter(a => !a.completada).length;
