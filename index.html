@@ -728,7 +728,7 @@ function mostrarPestana(nombre) {
 }
 mostrarPestana('inicio');
 function probarNotificaciones() {
- alert("Permiso: " + (("Notification" in window) ? Notification.permission : "no disponible"));
+ new Notification("Prueba", { body: "¡Las notificaciones funcionan!" });
   if (!("Notification" in window)) {
     alert("Tu navegador no permite notificaciones.");
     return;
